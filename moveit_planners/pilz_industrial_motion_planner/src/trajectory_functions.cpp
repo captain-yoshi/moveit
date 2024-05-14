@@ -291,6 +291,17 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
     ik_solution_last = ik_solution;
   }
 
+  if (joint_trajectory.points.size() >= 2)
+  {
+    if ((joint_trajectory.points.end() - 1)->time_from_start == (joint_trajectory.points.end() - 2)->time_from_start)
+    {
+      ROS_WARN("last 2 waypoints time from start are equal");
+
+      auto& point = joint_trajectory.points[joint_trajectory.points.size() - 1];
+      point.time_from_start = point.time_from_start + ros::Duration(epsilon);
+    }
+  }
+
   error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
   double duration_ms = (ros::Time::now() - generation_begin).toSec() * 1000;
   ROS_DEBUG_STREAM("Generate trajectory (N-Points: " << joint_trajectory.points.size() << ") took " << duration_ms
